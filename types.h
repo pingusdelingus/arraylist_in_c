@@ -17,7 +17,6 @@ typedef i8 b8;
 typedef i32 b32;
 
 typedef float f32;
-typedef double f64;
 
 #define KiB(n) ((u64)(n) << 10)
 #define MiB(n) ((u64)(n) << 20)
@@ -26,3 +25,5 @@ typedef double f64;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define ALIGN_UP_POW2(n, p) (((u64)(n) + ((u64)(p) - 1)) & (~((u64)(p) - 1)))
+
+
