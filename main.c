@@ -1,88 +1,76 @@
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <limits.h>
 #include "arraylist.h"
+#define getSize(a) ((a)->size)
 
+#define push(a, val) do { \
+  if (((a)->used + 1) > 0.75 * getSize(a)) { \
+    double_arraylist(&(a)); \
+  } \
+  ((f32*)(a)->arr)[(a)->used++] = (val); \
+} while(0)
 
+#define get(res, a, index) do { \
+  if ( (index) < 0 || (index) >= getSize(a) ) { \
+    (res) = -INT_MAX; \
+  } else { \
+    (res) = ((f32*)(a)->arr)[(index)]; \
+  } \
+} while(0)
 
-arraylist* create_arraylist(size_t len)
-{
-  arraylist* a = (arraylist*) malloc(sizeof(arraylist));
+#define create_arraylist(a, t, len) do { \
+  (a) = (arraylist*) malloc(sizeof(arraylist)); \
+  if (a) { \
+    (a)->arr = malloc(sizeof(t) * (len)); \
+    (a)->size = (len); \
+    (a)->used = 0; \
+  } \
+} while(0)
 
-  a->size = len;
-  a->used = 0;
-  return a;
-}
+#define destroy_arraylist(a) do { \
+  free((a)->arr); \
+  free(a); \
+} while(0)
 
-void destroy_arraylist(arraylist* a )
-{
-  free(a);
-}
-
-size_t getSize(arraylist* a )
-{
-  return a->size;
-}
-
-void double_arraylist(arraylist** a )
-{
+void double_arraylist(arraylist** a) {
+  printf("doubling size \n");
   size_t old_size = getSize(*a);
-  arraylist* newlist = (arraylist*) malloc(2 * old_size);
-
-  memcpy((*a)->arr, newlist->arr, sizeof(i32) * old_size);
-  newlist->size = 2 * old_size;
-  newlist->used = (*a)->used;
-  destroy_arraylist(*a);
-  *a = newlist;
-}
-
-void push(arraylist* a, i32 i )
-{
-  size_t s = getSize(a);
-
-  if ((a->used + 1 ) > 0.75 * s){
-      double_arraylist(&a);
+  size_t new_size = old_size * 2;
+  
+  void* new_ptr = realloc((*a)->arr, sizeof(i32) * new_size);
+  if (new_ptr) {
+    (*a)->arr = new_ptr;
+    (*a)->size = new_size;
   }
-  a->arr[a->used] = i;
-  a->used++;
-  return;
-}
+}// end of double arraylist
 
-i32 get(arraylist* a , i32 index)
-{
-  if ( index < 0 || index > getSize(a) ) {
-    return -1;
-  }
-  return a->arr[index];
-}
+#define print_arraylist(a) do { \
+  size_t _len = getSize(a); \
+  for (i32 i = 0; i < (i32)_len; i++) { \
+    i32 curr = 0; \
+    get(curr, a, i); \
+    if (i < (a)->used) { \
+      printf("%f at i=%d\n", curr, i); \
+    } \
+  } \
+  printf("-------------------------------------\n"); \
+} while(0)
 
-void print_arraylist(arraylist* a )
-{
-  size_t len = getSize(a);
-  for (i32 i = 0; i < len; i++){
-    i32 curr = get(a, i);
-    if (curr != 0 ){
-      printf("%d at i=%d\n",curr, i );
-    }
-  }
-  printf("-------------------------------------\n");
-}
+int main(void) {
+  arraylist* a;
+  create_arraylist(a, float, 5); // Start small to test doubling
 
+  push(a, 420.0f);
+  push(a, 69);
+  print_arraylist(a);
+  push(a, 1337);
+  push(a, 80085);
+  
+  print_arraylist(a);
 
-int main(void)
-{
-  arraylist* lst = create_arraylist(3);
-
-  push(lst, 420);
-  print_arraylist(lst);
-  push(lst, 1337);
-  print_arraylist(lst);
-
-  push(lst, 69);
-  print_arraylist(lst);
-
-  push(lst, 232);
-  print_arraylist(lst);
-
-
-  destroy_arraylist(lst);
+  destroy_arraylist(a);
+  return 0;
 }
